@@ -12,7 +12,6 @@ class VimeoApi {
         'Authorization':`Bearer ${this.clientId}`
     };
 
-
     this.verify()
   }
 
@@ -33,7 +32,7 @@ class VimeoApi {
       this.uri = uri;
       this.name = name;
       this.authorization = true;
-      console.log(user);
+      //console.log(user);
 
     } catch (error) {
       console.log(error);
@@ -66,32 +65,31 @@ class VimeoApi {
       });
   }
 
-  async getVideos() {
-
+  async getVideos(url = `${URL}${this.uri}/videos`) {
+    console.log('GET VIDEOS: ', url)
     if(!this.authorization) return;
 
-    return fetch(
-      `${URL}/${this.uri}/videos`,
-      {
-          method: 'GET',
-          headers:{
-              'Content-Type': 'application/json',
-              'Accept':'application/vnd.vimeo.*+json;version=3.4',
-              'Authorization':`Bearer ${this.clientId}`
-          }
-      })
-      .then(function(response) {
-          return response.json();
-      })
-      .then((myJson)=> {
-          let {data} = myJson
-          console.log(myJson);
-          console.log(data);
-      });
+    let resp = await fetch(url,{
+      headers: this.headers
+    });
 
+    if(!resp.ok){
+        if(resp.status === 401) throw new Error("Client id erroneo")
+    }
+
+    let data = await resp.json();
+
+    return {
+      ...data,
+      next: ()=> this.getVideos(`${URL}${data.paging.next || `${this.uri}/videos` }`),
+      previous: ()=> this.getVideos(`${URL}${data.paging.previous || `${this.uri}/videos` }`),
+      first: ()=> this.getVideos(`${URL}${data.paging.first}`),
+      last: ()=> this.getVideos(`${URL}${data.paging.last}`)
+    }
   }
 }
 
 window.Vimeo = new VimeoApi({
-    clientId: '5457195e158ae8ec80d43a6a2d9257b3'
-})
+  clientId: '5457195e158ae8ec80d43a6a2d9257b3'
+});
+
