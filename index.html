@@ -4,9 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+      #videos {
+        display:flex;
+        flex-wrap: wrap;
+      }
+      #videos > div > iframe {
+        width:300px;
+        height: 200px;
+      }
+    </style>
 </head>
 <body>
     <h1>VIMEO API</h1>
-    <script src="app.js"></script>
+    <div id="videos">
+
+    </div>
+    <script src="dist/bundle.js"></script>
+    <script>
+
+      const { VIMEO_READY } = VimeoApi.Events;
+
+      let vimeo = new VimeoApi({
+        clientId: '5457195e158ae8ec80d43a6a2d9257b3',
+        debug:true
+      });
+
+      vimeo.on(VIMEO_READY, async (ev) => {
+        // console.log("init",ev);
+
+        let cursor = await vimeo.getVideos();
+        // console.log(cursor.data)
+
+        document.querySelector('#videos').innerHTML = cursor.data.map((data)=>{
+          return `<div>
+            <h2>${data.name}</h2>
+            ${data.embed.html}
+          </div>`
+        })
+
+        cursor = await cursor.first();
+        // console.log(cursor)
+
+      });
+    </script>
 </body>
 </html>

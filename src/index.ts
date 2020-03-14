@@ -1,10 +1,31 @@
 const URL = 'https://api.vimeo.com';
 
+// function g() {
+//   console.log("g(): evaluated");
+//   return function (target, propertyKey: string, descriptor: PropertyDescriptor) {
+//       console.log("g(): called");
+//   }
+// }
+
+
+function log() {
+  return function (target, propertyKey: string, descriptor: PropertyDescriptor) {
+    console.log('LOG:', propertyKey);
+  }
+}
+
 class VimeoApi {
+
+  static Events = {
+    VIMEO_READY:'vimeoReady'
+  }
+
   constructor({
-      clientId
-  }) {
-    this.clientId = clientId || '';
+      clientId = '',
+      debug = false
+  } = {}) {
+    this.debug = debug;
+    this.clientId = clientId;
     this.authorization = false;
     this.headers = {
         'Content-Type': 'application/json',
@@ -12,7 +33,8 @@ class VimeoApi {
         'Authorization':`Bearer ${this.clientId}`
     };
 
-    this.verify()
+    this.verify();
+
   }
 
   async verify() {
@@ -33,6 +55,14 @@ class VimeoApi {
       this.name = name;
       this.authorization = true;
       //console.log(user);
+
+      let event = new CustomEvent(VimeoApi.Events.VIMEO_READY,{
+        detail: {
+          test:"test"
+        }
+      });
+
+      document.dispatchEvent(event);
 
     } catch (error) {
       console.log(error);
@@ -66,7 +96,6 @@ class VimeoApi {
   }
 
   async getVideos(url = `${URL}${this.uri}/videos`) {
-    console.log('GET VIDEOS: ', url)
     if(!this.authorization) return;
 
     let resp = await fetch(url,{
@@ -87,9 +116,15 @@ class VimeoApi {
       last: ()=> this.getVideos(`${URL}${data.paging.last}`)
     }
   }
+
+  on(event, cb){
+    document.addEventListener(event, cb)
+  }
+
+  off(event, cb){
+    document.removeEventListener(event, cb)
+  }
+
 }
 
-window.Vimeo = new VimeoApi({
-  clientId: '5457195e158ae8ec80d43a6a2d9257b3'
-});
-
+window.VimeoApi = VimeoApi;
