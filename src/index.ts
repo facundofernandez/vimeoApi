@@ -7,7 +7,6 @@ const URL = 'https://api.vimeo.com';
 //   }
 // }
 
-
 function log() {
   return function (target, propertyKey: string, descriptor: PropertyDescriptor) {
     console.log('LOG:', propertyKey);
@@ -18,6 +17,21 @@ class VimeoApi {
 
   static Events = {
     VIMEO_READY:'vimeoReady'
+  }
+
+  static Sort = {
+    Direction: {
+      ASC: 'asc',
+      DESC: 'desc'
+    },
+    ALPHABETICAL:'alphabetical',
+    COMMENTS:'comments',
+    DATE:'date',
+    DURATION:'duration',
+    LAST_USER_ACTION_EVENT_DATE:'last_user_action_event_date',
+    LIKES:'likes',
+    MODIFIED_TIME:'modifiedTime',
+    PLAYS:'plays'
   }
 
   constructor({
@@ -95,8 +109,20 @@ class VimeoApi {
       });
   }
 
-  async getVideos(url = `${URL}${this.uri}/videos`) {
+  async getVideos({url = `${URL}${this.uri}/videos`, options = {}}) {
     if(!this.authorization) return;
+
+    let searchParams = new URLSearchParams('');
+
+    for(let option in options){
+      searchParams.append(option,options[option])
+    }
+
+    url = url.indexOf('?') === -1
+      ? `${url}?${searchParams.toString()}`
+      : searchParams.toString() !== ''
+        ? `${url}&${searchParams.toString()}`
+        : url;
 
     let resp = await fetch(url,{
       headers: this.headers
@@ -110,10 +136,10 @@ class VimeoApi {
 
     return {
       ...data,
-      next: ()=> this.getVideos(`${URL}${data.paging.next || `${this.uri}/videos` }`),
-      previous: ()=> this.getVideos(`${URL}${data.paging.previous || `${this.uri}/videos` }`),
-      first: ()=> this.getVideos(`${URL}${data.paging.first}`),
-      last: ()=> this.getVideos(`${URL}${data.paging.last}`)
+      next: ()=> this.getVideos({url:`${URL}${data.paging.next || `${this.uri}/videos` }`}),
+      previous: ()=> this.getVideos({url:`${URL}${data.paging.previous || `${this.uri}/videos` }`}),
+      first: ()=> this.getVideos({url:`${URL}${data.paging.first}`}),
+      last: ()=> this.getVideos({url:`${URL}${data.paging.last}`})
     }
   }
 

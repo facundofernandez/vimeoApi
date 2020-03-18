@@ -24,6 +24,7 @@
     <script>
 
       const { VIMEO_READY } = VimeoApi.Events;
+      const { Sort } = VimeoApi;
 
       let vimeo = new VimeoApi({
         clientId: '5457195e158ae8ec80d43a6a2d9257b3',
@@ -33,7 +34,12 @@
       vimeo.on(VIMEO_READY, async (ev) => {
         // console.log("init",ev);
 
-        let cursor = await vimeo.getVideos();
+        let cursor = await vimeo.getVideos({
+          options:{
+            sort: Sort.DATE,
+            direction: Sort.Direction.DESC
+          }
+        });
         // console.log(cursor.data)
 
         document.querySelector('#videos').innerHTML = cursor.data.map((data)=>{
@@ -44,7 +50,7 @@
         })
 
         cursor = await cursor.first();
-        // console.log(cursor)
+         console.log(cursor)
 
       });
     </script>

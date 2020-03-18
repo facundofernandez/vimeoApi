@@ -1,13 +1,13 @@
 {
   "name": "vimeo-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
     "clean": "rm dist/bundle.js",
     "watch": "npx webpack --watch -d --mode development --config webpack.config.js",
     "build-dev": "npx webpack -d --mode development",
-    "build-prod": "npx webpack -p --mode production"
+    "build": "npx webpack -p --mode production"
   },
   "keywords": [],
   "author": "",
